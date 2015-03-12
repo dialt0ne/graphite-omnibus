@@ -6,7 +6,7 @@ This is an [fpm-cookery](https://github.com/bernd/fpm-cookery) Omnibus recipe th
 
 [This whinge](https://twitter.com/supersheep/status/509332504269299712).
 
-Also, if rolling out a federated graphite cluster, its a good idea to have the whole gluster be consistent.
+Also, if rolling out a federated graphite cluster, its a good idea to have the whole cluster be consistent.
 
 ## Note
 
