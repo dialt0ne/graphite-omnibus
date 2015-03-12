@@ -13,5 +13,7 @@ class InitScripts < FPM::Cookery::Recipe
     # Copy init-scripts to right place
     etc('init.d').install workdir('carbon-relay.initd') => 'graphite-carbon-relay'
     etc('init.d').install workdir('carbon-cache.initd') => 'graphite-carbon-cache'
+    etc('init.d').install workdir('carbon-aggregator.initd') => 'graphite-carbon-aggregator'
+    etc('init.d').install workdir('graphite-web.initd') => 'graphite-web-gunicorn'
   end
 end

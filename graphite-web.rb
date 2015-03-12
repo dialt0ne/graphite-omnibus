@@ -3,11 +3,11 @@ class GraphiteWeb < FPM::Cookery::Recipe
 
   name     'graphite-web'
   section  'Monitoring'
-  version  '0.9.12.head'
+  version  '0.9.13-pre1'
   revision 0
   
   homepage 'https://github.com/graphite-project/graphite-web'
-  source   'https://github.com/graphite-project/graphite-web', :with => :git
+  source   'https://github.com/graphite-project/graphite-web', :with => :git, :tag  => '0.9.13-pre1'
 
   maintainer 'Andy Sykes <github@tinycat.co.uk>'
   vendor     'fpm'

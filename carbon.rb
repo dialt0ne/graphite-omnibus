@@ -3,11 +3,11 @@ class Carbon < FPM::Cookery::Recipe
 
   name     'carbon'
   section  'Monitoring'
-  version  '0.9.12.head'
+  version  '0.9.13-pre1'
   revision 0
   
   homepage 'https://github.com/graphite-project/carbon'
-  source   'https://github.com/graphite-project/carbon', :with => :git
+  source   'https://github.com/graphite-project/carbon', :with => :git, :tag  => '0.9.13-pre1'
 
   maintainer 'Andy Sykes <github@tinycat.co.uk>'
   vendor     'fpm'

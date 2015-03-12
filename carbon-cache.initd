@@ -1,3 +1,10 @@
+#!/bin/sh
+#
+# graphite-carbon-cache  init file for starting up the carbon-cache daemon
+#
+# chkconfig:   2345 20 80
+# description: Starts and stops the carbon-cache daemon.
+#
 ### BEGIN INIT INFO
 # Provides:          graphite-carbon-cache
 # Required-Start:    $local_fs $remote_fs $network $syslog $named
@@ -6,28 +13,42 @@
 # Should-Stop:       $all
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Start/stop Graphite Carbon Cache
-# Description:       Start/stop Graphite Carbon Cache
+# Short-Description: Start/stop Graphite Carbon cache
+# Description:       Start/stop Graphite Carbon cache
 ### END INIT INFO
 
-APP=graphite-carbon-cache
-USER=root
-BASE=/opt/graphite-omnibus/graphite
+APPNAME="carbon-cache"
+DAEMON="/opt/graphite-omnibus/graphite/bin/$APPNAME.py"
+CONFIG="/opt/graphite/conf/carbon.conf"
+PIDFILE="/var/run/$APPNAME.pid"
+LOGDIR="/var/log/carbon"
+DAEMON_ARGS="--config=$CONFIG --pidfile=$PIDFILE --logdir=$LOGDIR"
+
+# ubuntu/debian
+[ -r /lib/lsb/init-functions ] && . /lib/lsb/init-functions
+[ -r /etc/default/$APPNAME ] && . /etc/default/$APPNAME
+# centos/rhel
+[ -e /etc/rc.d/init.d/functions ] && . /etc/rc.d/init.d/functions
+[ -e /etc/sysconfig/$APPNAME ] && . /etc/sysconfig/$APPNAME
+
 
 start() {
-  echo "Starting $APP"
-  su -l $USER -c "cd $BASE/bin && ./carbon-cache.py start"
-  return $?
+  echo "Starting $APPNAME"
+  pushd $LOGDIR > /dev/null
+  $DAEMON $DAEMON_ARGS start
+  RETVAL=$?
+  popd > /dev/null
+  return $RETVAL
 }
 
 stop() {
-  echo "Stopping $APP"
-  su -l $USER -c "cd $BASE/bin && ./carbon-cache.py stop"
+  echo "Stopping $APPNAME"
+  $DAEMON $DAEMON_ARGS stop
   return $?
 }
 
 status() {
-  su -l $USER -c "cd $BASE/bin && ./carbon-cache.py status"
+  $DAEMON $DAEMON_ARGS status
   return $?
 }
 
@@ -54,7 +75,7 @@ case "$1" in
     RETVAL=$?
     ;;
   *)
-    echo "Usage: $APP {start|restart|stop|status}"
+    echo "Usage: $APPNAME {start|restart|stop|status}"
     RETVAL=2
     ;;
 esac

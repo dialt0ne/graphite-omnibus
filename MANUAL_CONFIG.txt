@@ -1,0 +1,92 @@
+# prep directories
+mkdir -p /var/log/carbon
+mkdir -p /opt/graphite/conf
+mkdir -p /opt/graphite/storage/.python-eggs
+mkdir -p /opt/graphite/webapp/graphite
+chown -Rh carbon:carbon /var/log/carbon
+chown -Rh carbon:carbon /opt/graphite/storage
+
+# prep carbon daemons config
+cat > /opt/graphite/conf/carbon.conf << \EOF
+# custom settings
+[DEFAULT]
+CONF_DIR       = /opt/graphite/conf/
+STORAGE_DIR    = /opt/graphite/storage
+LOCAL_DATA_DIR = %(STORAGE_DIR)s/whisper/
+WHITELISTS_DIR = %(STORAGE_DIR)s/lists/
+LOG_DIR        = /var/log/carbon
+PID_DIR        = %(STORAGE_DIR)s/
+LOCAL_DATA_DIR = /opt/graphite/storage/whisper/
+USER           = carbon
+
+EOF
+cat /opt/graphite-omnibus/graphite/conf/carbon.conf.example |
+    sed -e 's/^USER =/USER = carbon/gi' >> /opt/graphite/conf/carbon.conf
+cat /opt/graphite-omnibus/graphite/conf/dashboard.conf.example > /opt/graphite/conf/dashboard.conf
+cat /opt/graphite-omnibus/graphite/conf/graphTemplates.conf.example > /opt/graphite/conf/graphTemplates.conf
+cat /opt/graphite-omnibus/graphite/conf/storage-schemas.conf.example > /opt/graphite/conf/storage-schemas.conf
+cat /opt/graphite-omnibus/graphite/conf/storage-aggregation.conf.example > /opt/graphite/conf/storage-aggregation.conf
+
+cat /opt/graphite-omnibus/graphite/conf/relay-rules.conf.example > /opt/graphite/conf/relay-rules.conf
+perl -i -ne '!/^destinations/ && print; /^destinations/ && print "#$_"; /^destinations/ && print "destinations = 127.0.0.1:2004\n";' /opt/graphite/conf/relay-rules.conf
+
+# prep graphite-web config
+cat /opt/graphite-omnibus/graphite/conf/graphite.wsgi.example > /opt/graphite/conf/graphite.wsgi
+perl -i -ne "print; /^sys.path/ && print \"sys.path.append('/opt/graphite-omnibus/graphite/lib')\n\"; /^sys.path/ && print \"sys.path.append('/opt/graphite-omnibus/graphite/webapp')\n\"" /opt/graphite/conf/graphite.wsgi
+ln -s graphite.wsgi /opt/graphite/conf/graphite_wsgi.py
+
+cat > /opt/graphite/webapp/graphite/local_settings.py << \EOF
+# custom settings
+CONF_DIR = '/opt/graphite/conf'
+STORAGE_DIR = '/opt/graphite/storage'
+DASHBOARD_CONF = '/opt/graphite/conf/dashboard.conf'
+GRAPHTEMPLATES_CONF = '/opt/graphite/conf/graphTemplates.conf'
+LOG_DIR = '/var/log/carbon'
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'HOST': '127.0.0.1',
+        'OPTIONS': {
+           'read_default_file': '/opt/graphite/conf/graphite-my.cnf',
+           'init_command': 'SET storage_engine=INNODB',
+        }
+    }
+}
+
+EOF
+cat /opt/graphite-omnibus/graphite/lib/graphite/local_settings.py.example >> /opt/graphite/webapp/graphite/local_settings.py
+ln -s /opt/graphite/webapp/graphite/local_settings.py /opt/graphite-omnibus/graphite/lib/graphite/local_settings.py
+
+cat > /opt/graphite/conf/graphite-web-gunicorn.conf << \EOF
+chdir = "/opt/graphite/conf"
+bind = "0.0.0.0:8888"
+workers = 4
+daemon = True
+user = "carbon"
+group = "carbon"
+pidfile = "/var/run/graphite-web.pid"
+accesslog = "/var/log/carbon/graphite-web.access.log"
+errorlog = "/var/log/carbon/graphite-web.error.log"
+EOF
+
+cat > /opt/graphite/conf/graphite-my.cnf << \EOF
+[client]
+database = graphite
+user = graphite
+password = XXXXXXXXXXXX
+default-character-set = utf8
+EOF
+
+# django bits
+mysql -uroot -p
+
+mysql> DROP DATABASE GRAPHITE;
+mysql> CREATE DATABASE GRAPHITE CHARACTER SET utf8;
+mysql> GRANT ALL PRIVILEGES ON graphite.* TO 'graphite'@'127.0.0.1' identified by 'XXXXXXXXXXXX';
+mysql> GRANT ALL PRIVILEGES ON graphite.* TO 'graphite'@'%' identified by 'XXXXXXXXXXXX';
+mysql> FLUSH PRIVILEGES;
+
+PYTHONPATH=/opt/graphite-omnibus/graphite/lib /opt/graphite-omnibus/bin/python /opt/graphite-omnibus/graphite/lib/graphite/manage.py syncdb --settings=graphite.settings --noinput
+touch /opt/graphite/storage/index
+chown -Rh carbon:carbon /opt/graphite/storage
+

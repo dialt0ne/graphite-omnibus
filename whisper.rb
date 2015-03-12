@@ -3,11 +3,11 @@ class Whisper < FPM::Cookery::Recipe
 
   name     'whisper'
   section  'Monitoring'
-  version  '0.9.12.head'
+  version  '0.9.13-pre1'
   revision 0
   
   homepage 'https://github.com/graphite-project/whisper'
-  source   'https://github.com/graphite-project/whisper', :with => :git
+  source   'https://github.com/graphite-project/whisper', :with => :git, :tag  => '0.9.13-pre1'
 
   maintainer 'Andy Sykes <github@tinycat.co.uk>'
   vendor     'fpm'

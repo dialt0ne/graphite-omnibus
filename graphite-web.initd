@@ -1,0 +1,103 @@
+#!/bin/sh
+#
+# graphite-web-gunicorn  init file for starting up the graphite-web gunicorn daemon
+#
+# chkconfig:   2345 20 80
+# description: Starts and stops the graphite-web gunicorn daemon.
+#
+### BEGIN INIT INFO
+# Provides:          graphite-web-gunicorn
+# Required-Start:    $local_fs $remote_fs $network $syslog $named
+# Required-Stop:     $local_fs $remote_fs $network $syslog $named
+# Should-Start:      $all
+# Should-Stop:       $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start/stop Graphite web gunicorn
+# Description:       Start/stop Graphite web gunicorn
+### END INIT INFO
+
+APPNAME="graphite-web"
+DAEMON="/opt/graphite-omnibus/bin/gunicorn"
+CONFIG="/opt/graphite/conf/$APPNAME-gunicorn.conf"
+# note: pidfile must be set in config file to match
+PIDFILE="/var/run/$APPNAME.pid"
+LOGDIR="/var/log/carbon"
+WEBAPPNAME="graphite_wsgi:application"
+DAEMON_ARGS="$DAEMON_ARGS --config $CONFIG $WEBAPPNAME"
+export PYTHON_EGG_CACHE="/opt/graphite/storage/.python-eggs"
+
+# ubuntu/debian
+[ -r /lib/lsb/init-functions ] && . /lib/lsb/init-functions
+[ -r /etc/default/$APPNAME ] && . /etc/default/$APPNAME
+# centos/rhel
+[ -e /etc/rc.d/init.d/functions ] && . /etc/rc.d/init.d/functions
+[ -e /etc/sysconfig/$APPNAME ] && . /etc/sysconfig/$APPNAME
+
+
+start() {
+  echo "Starting $APPNAME"
+  pushd $LOGDIR > /dev/null
+  $DAEMON $DAEMON_ARGS
+  RETVAL=$?
+  popd > /dev/null
+  return $RETVAL
+}
+
+stop() {
+  echo "Stopping $APPNAME"
+  if [ -e $PIDFILE ]; then
+    kill `cat $PIDFILE`
+  else
+    echo "Cannot stop $APPNAME: pid file $PIDFILE not present"
+  fi
+  return $?
+}
+
+status() {
+  if [ -e $PIDFILE ]; then
+    PID=`cat $PIDFILE`
+    if [ -f /proc/$PID/status ] ; then
+      echo -n "$APPNAME running as $PID: "
+      grep "^State:" /proc/$PID/status
+      RETVAL=0
+    else
+      echo "$APPNAME not running: pidfile reports pid $PID but it has no status. clean up the pidfile, please."
+      RETVAL=1
+    fi
+  else
+    echo "$APPNAME not running: pidfile $PIDFILE not present"
+    RETVAL=2
+  fi
+  return $RETVAL
+}
+
+case "$1" in
+  # Start command
+  start)
+    start
+    RETVAL=$?
+    ;;
+  # Stop command
+  stop)
+    stop
+    RETVAL=$?
+    ;;
+  # Restart command
+  restart)
+    stop
+    start
+    RETVAL=$?
+    ;;
+  # Status command
+  status)
+    status
+    RETVAL=$?
+    ;;
+  *)
+    echo "Usage: $APPNAME {start|restart|stop|status}"
+    RETVAL=2
+    ;;
+esac
+ 
+exit $RETVAL

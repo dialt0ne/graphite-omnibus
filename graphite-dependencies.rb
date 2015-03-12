@@ -12,7 +12,14 @@ class GraphiteDependencies < FPM::Cookery::Recipe
 
   section 'interpreters'
   
-  depends 'libcairo2', 'libffi-dev'
+  platforms [:ubuntu, :debian] do
+    depends 'libcairo2', 'libffi-dev'
+  end
+
+  platforms [:fedora, :redhat, :centos] do
+    build_depends 'cairo-devel', 'libffi-devel'
+    depends 'cairo', 'libffi'
+  end
 
   def build
     # Do nothing
@@ -25,5 +32,8 @@ class GraphiteDependencies < FPM::Cookery::Recipe
     safesystem "/opt/graphite-omnibus/bin/easy_install django-tagging==0.3.1"
     safesystem "/opt/graphite-omnibus/bin/easy_install python-memcached==1.53"
     safesystem "/opt/graphite-omnibus/bin/easy_install pysqlite==2.6.3"
+    safesystem "/opt/graphite-omnibus/bin/easy_install pyparsing==2.0.3"
+    safesystem "/opt/graphite-omnibus/bin/easy_install pytz==2014.10"
+    safesystem "/opt/graphite-omnibus/bin/easy_install mysqlclient==1.3.4"
   end
 end

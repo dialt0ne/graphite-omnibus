@@ -1,23 +1,23 @@
 #!/bin/sh
 #
-# graphite-carbon-relay  init file for starting up the carbon-relay daemon
+# graphite-carbon-aggregator  init file for starting up the carbon-aggregator daemon
 #
 # chkconfig:   2345 20 80
-# description: Starts and stops the carbon-relay daemon.
+# description: Starts and stops the carbon-aggregator daemon.
 #
 ### BEGIN INIT INFO
-# Provides:          graphite-carbon-relay
+# Provides:          graphite-carbon-aggregator
 # Required-Start:    $local_fs $remote_fs $network $syslog $named
 # Required-Stop:     $local_fs $remote_fs $network $syslog $named
 # Should-Start:      $all
 # Should-Stop:       $all
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Start/stop Graphite Carbon relay
-# Description:       Start/stop Graphite Carbon relay
+# Short-Description: Start/stop Graphite Carbon aggregator
+# Description:       Start/stop Graphite Carbon aggregator
 ### END INIT INFO
 
-APPNAME="carbon-relay"
+APPNAME="carbon-aggregator"
 DAEMON="/opt/graphite-omnibus/graphite/bin/$APPNAME.py"
 CONFIG="/opt/graphite/conf/carbon.conf"
 PIDFILE="/var/run/$APPNAME.pid"
