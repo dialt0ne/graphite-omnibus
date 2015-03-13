@@ -22,7 +22,7 @@ This is ~~extremely alpha~~ lightly tested, and should be improved. For example,
 
 Also added:
 
-- [MANUAL_CONFIG.txt](MANUAL_CONFIG.txt) for configuring /opt/graphite by hand (should normally be done via config mgmt)
+- [MANUAL_CONFIG.txt](MANUAL_CONFIG.txt) for configuring /opt/graphite by hand (should normally be done via config mgmt - I used [my own puppet module](https://github.com/dialt0ne/puppet-graphite_omnibus))
 - upgrade to python 2.7.9
 - stopped running daemons as root
 - included [carbonate](https://github.com/jssjr/carbonate) for managing the graphite cluster
