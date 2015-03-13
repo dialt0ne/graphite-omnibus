@@ -26,6 +26,7 @@ Also added:
 - upgrade to python 2.7.9
 - stopped running daemons as root
 - included [carbonate](https://github.com/jssjr/carbonate) for managing the graphite cluster
+- [graphite_omnibus.conf](graphite_omnibus.conf) - nginx config file if you are giving the URL to users
 
 ## Building
 
